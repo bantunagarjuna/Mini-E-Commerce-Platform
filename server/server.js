@@ -82,7 +82,7 @@ const parseBody = (req) => {
 const server = http.createServer(async (req, res) => {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   
   // Handle preflight requests
@@ -162,6 +162,42 @@ const server = http.createServer(async (req, res) => {
       res.end(JSON.stringify(result.rows));
     } catch (err) {
       console.error('Error searching products:', err);
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: 'Server error' }));
+    }
+  }
+  else if (pathname.match(/^\/api\/products\/\d+$/) && req.method === 'DELETE') {
+    // Delete a product
+    try {
+      // Extract the product ID from the URL
+      const productId = pathname.split('/').pop();
+      
+      if (!productId || isNaN(parseInt(productId))) {
+        res.statusCode = 400;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: 'Invalid product ID' }));
+        return;
+      }
+      
+      // Delete the product from the database
+      const result = await pool.query(
+        'DELETE FROM products WHERE id = $1 RETURNING *',
+        [productId]
+      );
+      
+      if (result.rows.length === 0) {
+        res.statusCode = 404;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: 'Product not found' }));
+        return;
+      }
+      
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ message: 'Product deleted successfully', product: result.rows[0] }));
+    } catch (err) {
+      console.error('Error deleting product:', err);
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify({ error: 'Server error' }));

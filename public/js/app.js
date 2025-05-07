@@ -9,6 +9,7 @@ function App() {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [searchResults, setSearchResults] = React.useState(null);
   const [isSearching, setIsSearching] = React.useState(false);
+  const [deletingProductId, setDeletingProductId] = React.useState(null);
 
   // Fetch products on component mount
   React.useEffect(() => {
@@ -38,6 +39,36 @@ function App() {
     setProducts([newProduct, ...products]);
     showToast('Success', 'Product added successfully!', 'success');
     setActiveTab('products');
+  };
+  
+  // Handle product deletion
+  const handleDeleteProduct = async (productId) => {
+    setDeletingProductId(productId);
+    
+    try {
+      const response = await fetch(`/api/products/${productId}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete product');
+      }
+      
+      // Update products list after deletion
+      setProducts(products.filter(product => product.id !== productId));
+      
+      // If we're showing search results, update them too
+      if (searchResults) {
+        setSearchResults(searchResults.filter(product => product.id !== productId));
+      }
+      
+      showToast('Success', 'Product deleted successfully!', 'success');
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      showToast('Error', 'Failed to delete product. Please try again.', 'error');
+    } finally {
+      setDeletingProductId(null);
+    }
   };
 
   // Show toast notification
@@ -121,7 +152,9 @@ function App() {
               isLoading={isLoading} 
               isSearchResults={!!searchResults}
               searchQuery={searchQuery}
-              onAddFirstProduct={() => setActiveTab('add-product')} 
+              onAddFirstProduct={() => setActiveTab('add-product')}
+              onDeleteProduct={handleDeleteProduct}
+              deletingProductId={deletingProductId}
             />
           </>
         )}
@@ -373,7 +406,8 @@ function ProductSubmissionForm({ onProductAdded, onError }) {
 }
 
 // Products View Component
-function ProductsView({ products, isLoading, isSearchResults, searchQuery, onAddFirstProduct }) {
+function ProductsView({ products, isLoading, isSearchResults, searchQuery, onAddFirstProduct, onDeleteProduct, deletingProductId }) {
+  
   if (isLoading) {
     return (
       <div className="text-center py-12">
@@ -421,7 +455,12 @@ function ProductsView({ products, isLoading, isSearchResults, searchQuery, onAdd
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard 
+            key={product.id} 
+            product={product} 
+            onDelete={onDeleteProduct}
+            isDeleting={deletingProductId === product.id}
+          />
         ))}
       </div>
     </div>
@@ -429,7 +468,7 @@ function ProductsView({ products, isLoading, isSearchResults, searchQuery, onAdd
 }
 
 // Product Card Component
-function ProductCard({ product }) {
+function ProductCard({ product, onDelete, isDeleting }) {
   const formatPrice = (price) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -440,6 +479,12 @@ function ProductCard({ product }) {
   const truncateText = (text, maxLength) => {
     if (text.length <= maxLength) return text;
     return text.slice(0, maxLength) + '...';
+  };
+  
+  const handleDelete = () => {
+    if (window.confirm(`Are you sure you want to delete "${product.name}"?`)) {
+      onDelete(product.id);
+    }
   };
 
   return (
@@ -466,13 +511,26 @@ function ProductCard({ product }) {
         <h3 className="text-xl font-semibold mb-2 text-gray-800">{product.name}</h3>
         <p className="text-blue-600 font-bold mb-3">{formatPrice(product.price)}</p>
         <p className="text-gray-600 mb-3">{truncateText(product.description, 100)}</p>
+        
         <div className="flex justify-between items-center">
           <span className="text-sm text-gray-500">
             ID: {product.id}
           </span>
-          <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-            View Details
-          </button>
+          <div className="flex space-x-2">
+            <button 
+              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              disabled={isDeleting}
+            >
+              View Details
+            </button>
+            <button 
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="text-red-600 hover:text-red-800 text-sm font-medium"
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
