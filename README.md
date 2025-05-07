@@ -58,19 +58,6 @@ http://localhost:5000
 - ✅ PostgreSQL database integration
 - ✅ Responsive design that works well on mobile, tablet, and desktop
 
-## Screenshots
-
-### Product Browse Page
-![Product Browse Page](screenshots/browse_products.png)
-
-### Add Product Page
-![Add Product Page](screenshots/add_product.png)
-
-### Product Search Results
-![Product Search Results](screenshots/search_results.png)
-
-### Delete Confirmation
-![Delete Confirmation](screenshots/delete_confirmation.png)
 
 ## Database Structure
 
