@@ -1,15 +1,26 @@
-import express from 'express';
-import { Pool } from 'pg';
-import cors from 'cors';
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
+const { Pool } = require('pg');
+const url = require('url');
+const querystring = require('querystring');
 
-// Create Express app
-const app = express();
+// Create HTTP server
 const PORT = process.env.PORT || 3000;
+const server = http.createServer();
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// MIME types for serving static files
+const MIME_TYPES = {
+  '.html': 'text/html',
+  '.js': 'text/javascript',
+  '.css': 'text/css',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.jpg': 'image/jpg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon'
+};
 
 // Database connection
 const pool = new Pool({

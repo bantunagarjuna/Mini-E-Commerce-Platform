@@ -1,48 +1,133 @@
-// App Component
+// Mini E-Commerce Platform App
+
+// Root App Component
 function App() {
-  const [activeTab, setActiveTab] = React.useState('products'); // Default to 'products' tab
-  const [toast, setToast] = React.useState({ show: false, title: '', message: '', type: 'success' });
-  
-  // Function to show a toast notification
-  const showToast = (title, message, type = 'success') => {
+  const [activeTab, setActiveTab] = React.useState('products');
+  const [products, setProducts] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [toast, setToast] = React.useState({ show: false, title: '', message: '', type: '' });
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [searchResults, setSearchResults] = React.useState(null);
+  const [isSearching, setIsSearching] = React.useState(false);
+
+  // Fetch products on component mount
+  React.useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // Fetch all products
+  const fetchProducts = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/products');
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      showToast('Error', 'Failed to load products. Please try again.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle product submission
+  const handleProductAdded = (newProduct) => {
+    setProducts([newProduct, ...products]);
+    showToast('Success', 'Product added successfully!', 'success');
+    setActiveTab('products');
+  };
+
+  // Show toast notification
+  const showToast = (title, message, type) => {
     setToast({ show: true, title, message, type });
-    setTimeout(() => setToast({ ...toast, show: false }), 3000);
+    setTimeout(() => {
+      setToast({ ...toast, show: false });
+    }, 3000);
   };
-  
-  // Function to handle successful product addition
-  const handleProductAdded = (product) => {
-    setActiveTab('products'); // Switch to products tab after adding
-    showToast('Product Added', `${product.name} has been added successfully!`);
+
+  // Handle product search
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    
+    setIsSearching(true);
+    try {
+      const response = await fetch(`/api/products/search?query=${encodeURIComponent(searchQuery)}`);
+      if (!response.ok) {
+        throw new Error('Search failed');
+      }
+      const data = await response.json();
+      setSearchResults(data);
+    } catch (error) {
+      console.error('Error searching products:', error);
+      showToast('Error', 'Failed to search products. Please try again.', 'error');
+    } finally {
+      setIsSearching(false);
+    }
   };
-  
-  // Function to handle product addition errors
-  const handleError = (error) => {
-    showToast('Error', error, 'error');
+
+  // Clear search results
+  const clearSearch = () => {
+    setSearchQuery('');
+    setSearchResults(null);
   };
-  
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <Header />
-      
       <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
       
-      <main className="mt-6">
-        {activeTab === 'submit' ? (
+      <main className="mt-8">
+        {activeTab === 'add-product' ? (
           <ProductSubmissionForm 
             onProductAdded={handleProductAdded} 
-            onError={handleError} 
+            onError={(message) => showToast('Error', message, 'error')} 
           />
         ) : (
-          <ProductsView onAddFirstProduct={() => setActiveTab('submit')} />
+          <>
+            <div className="mb-6">
+              <form onSubmit={handleSearch} className="flex gap-2">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search products..."
+                  className="flex-grow px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button 
+                  type="submit" 
+                  className="gradient-btn text-white px-4 py-2 rounded-lg"
+                  disabled={isSearching}
+                >
+                  {isSearching ? 'Searching...' : 'Search'}
+                </button>
+                {searchResults && (
+                  <button 
+                    type="button" 
+                    onClick={clearSearch}
+                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+                  >
+                    Clear
+                  </button>
+                )}
+              </form>
+            </div>
+            
+            <ProductsView 
+              products={searchResults || products} 
+              isLoading={isLoading} 
+              isSearchResults={!!searchResults}
+              searchQuery={searchQuery}
+              onAddFirstProduct={() => setActiveTab('add-product')} 
+            />
+          </>
         )}
       </main>
       
-      <Toast 
-        show={toast.show} 
-        title={toast.title} 
-        message={toast.message} 
-        type={toast.type} 
-      />
+      <Toast {...toast} />
     </div>
   );
 }
@@ -50,12 +135,13 @@ function App() {
 // Header Component
 function Header() {
   return (
-    <header className="mb-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold gradient-text">ShopEase</h1>
-        <p className="text-gray-600">Mini E-Commerce Platform</p>
-      </div>
-      <div className="mt-2 h-1 w-full bg-gradient-to-r from-blue-500 to-purple-500 rounded"></div>
+    <header className="text-center mb-8">
+      <h1 className="text-4xl font-bold mb-2">
+        <span className="gradient-text">Mini E-Commerce Platform</span>
+      </h1>
+      <p className="text-gray-600 max-w-2xl mx-auto">
+        Browse products or add your own to our catalog. Simple, fast, and user-friendly.
+      </p>
     </header>
   );
 }
@@ -63,30 +149,27 @@ function Header() {
 // Tab Navigation Component
 function TabNavigation({ activeTab, setActiveTab }) {
   return (
-    <div className="border-b border-gray-200">
-      <nav className="flex space-x-8">
-        <button
-          onClick={() => setActiveTab('products')}
-          className={`py-4 px-1 font-medium text-sm ${
-            activeTab === 'products'
-              ? 'tab-active'
-              : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
-          }`}
-        >
-          My Products
-        </button>
-        
-        <button
-          onClick={() => setActiveTab('submit')}
-          className={`py-4 px-1 font-medium text-sm ${
-            activeTab === 'submit'
-              ? 'tab-active'
-              : 'text-gray-500 hover:text-gray-700 hover:border-gray-300'
-          }`}
-        >
-          Product Submission
-        </button>
-      </nav>
+    <div className="flex border-b border-gray-200">
+      <button
+        className={`px-4 py-2 font-medium ${
+          activeTab === 'products'
+            ? 'text-blue-600 border-b-2 border-blue-600'
+            : 'text-gray-500 hover:text-gray-700'
+        }`}
+        onClick={() => setActiveTab('products')}
+      >
+        Browse Products
+      </button>
+      <button
+        className={`px-4 py-2 font-medium ${
+          activeTab === 'add-product'
+            ? 'text-blue-600 border-b-2 border-blue-600'
+            : 'text-gray-500 hover:text-gray-700'
+        }`}
+        onClick={() => setActiveTab('add-product')}
+      >
+        Add Product
+      </button>
     </div>
   );
 }
@@ -100,20 +183,66 @@ function ProductSubmissionForm({ onProductAdded, onError }) {
     imageUrl: ''
   });
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  
+  const [errors, setErrors] = React.useState({});
+
+  // Handle form input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+    
+    // Clear field-specific error when user starts typing
+    if (errors[name]) {
+      setErrors({
+        ...errors,
+        [name]: ''
+      });
+    }
   };
-  
+
+  // Validate form data
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!formData.name.trim()) {
+      newErrors.name = 'Product name is required';
+    }
+    
+    if (!formData.price) {
+      newErrors.price = 'Price is required';
+    } else if (isNaN(parseFloat(formData.price)) || parseFloat(formData.price) <= 0) {
+      newErrors.price = 'Price must be a positive number';
+    }
+    
+    if (!formData.description.trim()) {
+      newErrors.description = 'Description is required';
+    }
+    
+    if (formData.imageUrl && !isValidUrl(formData.imageUrl)) {
+      newErrors.imageUrl = 'Please enter a valid URL';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Check if URL is valid
+  const isValidUrl = (string) => {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  };
+
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Basic validation
-    if (!formData.name || !formData.price || !formData.description) {
-      onError('Please fill in all required fields');
-      return;
-    }
+    if (!validateForm()) return;
     
     setIsSubmitting(true);
     
@@ -131,57 +260,70 @@ function ProductSubmissionForm({ onProductAdded, onError }) {
         throw new Error(errorData.error || 'Failed to add product');
       }
       
-      const product = await response.json();
-      setFormData({ name: '', price: '', description: '', imageUrl: '' });
-      onProductAdded(product);
+      const newProduct = await response.json();
+      onProductAdded(newProduct);
+      
+      // Reset form
+      setFormData({
+        name: '',
+        price: '',
+        description: '',
+        imageUrl: ''
+      });
+      
     } catch (error) {
-      onError(error.message);
+      console.error('Error adding product:', error);
+      onError(error.message || 'Failed to add product. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Add a New Product</h2>
+    <div className="bg-white p-6 rounded-lg shadow-md max-w-2xl mx-auto">
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">Add New Product</h2>
       
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
+          <label htmlFor="name" className="block text-gray-700 font-medium mb-2">
             Product Name*
           </label>
           <input
+            type="text"
             id="name"
             name="name"
-            type="text"
             value={formData.name}
             onChange={handleChange}
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.name ? 'border-red-500' : 'border-gray-300'
+            }`}
             placeholder="Enter product name"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            required
           />
+          {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
         </div>
         
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="price">
+          <label htmlFor="price" className="block text-gray-700 font-medium mb-2">
             Price ($)*
           </label>
           <input
+            type="number"
             id="price"
             name="price"
-            type="number"
-            step="0.01"
-            min="0"
             value={formData.price}
             onChange={handleChange}
+            min="0.01"
+            step="0.01"
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.price ? 'border-red-500' : 'border-gray-300'
+            }`}
             placeholder="Enter price"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            required
           />
+          {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
         </div>
         
         <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
+          <label htmlFor="description" className="block text-gray-700 font-medium mb-2">
             Description*
           </label>
           <textarea
@@ -189,34 +331,40 @@ function ProductSubmissionForm({ onProductAdded, onError }) {
             name="description"
             value={formData.description}
             onChange={handleChange}
+            rows="4"
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.description ? 'border-red-500' : 'border-gray-300'
+            }`}
             placeholder="Enter product description"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500 h-32"
-            required
           ></textarea>
+          {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
         </div>
         
         <div className="mb-6">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="imageUrl">
-            Image URL (optional)
+          <label htmlFor="imageUrl" className="block text-gray-700 font-medium mb-2">
+            Image URL
           </label>
           <input
+            type="text"
             id="imageUrl"
             name="imageUrl"
-            type="url"
             value={formData.imageUrl}
             onChange={handleChange}
-            placeholder="Enter image URL"
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.imageUrl ? 'border-red-500' : 'border-gray-300'
+            }`}
+            placeholder="Enter image URL (optional)"
           />
+          {errors.imageUrl && <p className="text-red-500 text-sm mt-1">{errors.imageUrl}</p>}
         </div>
         
-        <div className="flex items-center justify-end">
+        <div className="flex justify-end">
           <button
             type="submit"
-            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline hover:from-blue-600 hover:to-purple-700 transition-all"
             disabled={isSubmitting}
+            className="gradient-btn text-white font-medium py-2 px-6 rounded-lg"
           >
-            {isSubmitting ? 'Submitting...' : 'Add Product'}
+            {isSubmitting ? 'Adding Product...' : 'Add Product'}
           </button>
         </div>
       </form>
@@ -225,165 +373,57 @@ function ProductSubmissionForm({ onProductAdded, onError }) {
 }
 
 // Products View Component
-function ProductsView({ onAddFirstProduct }) {
-  const [products, setProducts] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState(null);
-  const [searchQuery, setSearchQuery] = React.useState('');
-  const [searchResults, setSearchResults] = React.useState(null);
-  
-  // Fetch all products
-  React.useEffect(() => {
-    fetchProducts();
-  }, []);
-  
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/products');
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch products');
-      }
-      
-      const data = await response.json();
-      setProducts(data);
-      setError(null);
-    } catch (err) {
-      setError('Error loading products. Please try again later.');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  // Handle search
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    
-    if (!searchQuery.trim()) {
-      setSearchResults(null);
-      return;
-    }
-    
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/products/search?query=${encodeURIComponent(searchQuery)}`);
-      
-      if (!response.ok) {
-        throw new Error('Search failed');
-      }
-      
-      const data = await response.json();
-      setSearchResults(data);
-      setError(null);
-    } catch (err) {
-      setError('Search failed. Please try again.');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  // Clear search results
-  const clearSearch = () => {
-    setSearchQuery('');
-    setSearchResults(null);
-  };
-  
-  // Determine which products to display
-  const displayedProducts = searchResults || products;
-  
-  if (loading) {
+function ProductsView({ products, isLoading, isSearchResults, searchQuery, onAddFirstProduct }) {
+  if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      <div className="text-center py-12">
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
+        <p className="mt-4 text-gray-600">Loading products...</p>
       </div>
     );
   }
-  
-  if (error) {
+
+  if (products.length === 0) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-md p-4 text-center">
-        <p className="text-red-600">{error}</p>
-        <button 
-          onClick={fetchProducts}
-          className="mt-2 text-red-700 underline"
-        >
-          Try Again
-        </button>
+      <div className="text-center py-12 bg-white rounded-lg shadow-md">
+        {isSearchResults ? (
+          <>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">No products found</h3>
+            <p className="text-gray-600 mb-4">
+              No products match your search "{searchQuery}". Try a different search term.
+            </p>
+          </>
+        ) : (
+          <>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">No products available</h3>
+            <p className="text-gray-600 mb-4">
+              Get started by adding your first product to the catalog.
+            </p>
+            <button
+              onClick={onAddFirstProduct}
+              className="gradient-btn text-white font-medium py-2 px-6 rounded-lg"
+            >
+              Add Your First Product
+            </button>
+          </>
+        )}
       </div>
     );
   }
-  
-  if (products.length === 0 && !searchResults) {
-    return (
-      <div className="text-center p-8 bg-white rounded-lg shadow-md">
-        <h3 className="text-xl font-semibold mb-2">No products yet</h3>
-        <p className="text-gray-600 mb-4">Get started by adding your first product.</p>
-        <button
-          onClick={onAddFirstProduct}
-          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline hover:from-blue-600 hover:to-purple-700 transition-all"
-        >
-          Add Your First Product
-        </button>
-      </div>
-    );
-  }
-  
+
   return (
     <div>
-      {/* Search Form */}
-      <div className="mb-6">
-        <form onSubmit={handleSearch} className="flex gap-2">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search products by name or description..."
-            className="flex-grow shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-          <button
-            type="submit"
-            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition-colors"
-          >
-            Search
-          </button>
-          {searchResults && (
-            <button
-              type="button"
-              onClick={clearSearch}
-              className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 transition-colors"
-            >
-              Clear
-            </button>
-          )}
-        </form>
+      {isSearchResults && (
+        <h3 className="text-xl font-semibold mb-4">
+          Search Results for "{searchQuery}" ({products.length} {products.length === 1 ? 'product' : 'products'})
+        </h3>
+      )}
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
       </div>
-      
-      {/* Search Results Indicator */}
-      {searchResults && (
-        <div className="mb-4 text-sm text-gray-600">
-          {searchResults.length === 0 ? (
-            <p>No results found for "{searchQuery}"</p>
-          ) : (
-            <p>Showing {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} for "{searchQuery}"</p>
-          )}
-        </div>
-      )}
-      
-      {/* Products Grid */}
-      {displayedProducts.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {displayedProducts.map(product => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      ) : searchResults && (
-        <div className="text-center p-8 bg-white rounded-lg shadow-md">
-          <p className="text-gray-600">No matching products found.</p>
-        </div>
-      )}
     </div>
   );
 }
@@ -391,38 +431,48 @@ function ProductsView({ onAddFirstProduct }) {
 // Product Card Component
 function ProductCard({ product }) {
   const formatPrice = (price) => {
-    return parseFloat(price).toLocaleString('en-US', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
-    });
+    }).format(price);
   };
-  
+
+  const truncateText = (text, maxLength) => {
+    if (text.length <= maxLength) return text;
+    return text.slice(0, maxLength) + '...';
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-      {product.image_url && (
+    <div className="bg-white rounded-lg overflow-hidden card-shadow card-hover">
+      {product.image_url ? (
         <div className="h-48 overflow-hidden">
-          <img 
-            src={product.image_url} 
-            alt={product.name} 
+          <img
+            src={product.image_url}
+            alt={product.name}
             className="w-full h-full object-cover"
             onError={(e) => {
               e.target.onerror = null;
-              e.target.src = "https://via.placeholder.com/400x200?text=No+Image";
+              e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';
             }}
           />
+        </div>
+      ) : (
+        <div className="h-48 bg-gray-200 flex items-center justify-center text-gray-500">
+          No Image Available
         </div>
       )}
       
       <div className="p-4">
-        <div className="flex justify-between items-start">
-          <h3 className="text-lg font-semibold text-gray-800">{product.name}</h3>
-          <span className="font-bold text-indigo-600">{formatPrice(product.price)}</span>
-        </div>
-        
-        <p className="mt-2 text-gray-600 line-clamp-3">{product.description}</p>
-        
-        <div className="mt-4 text-xs text-gray-500">
-          Added on {new Date(product.created_at).toLocaleDateString()}
+        <h3 className="text-xl font-semibold mb-2 text-gray-800">{product.name}</h3>
+        <p className="text-blue-600 font-bold mb-3">{formatPrice(product.price)}</p>
+        <p className="text-gray-600 mb-3">{truncateText(product.description, 100)}</p>
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-gray-500">
+            ID: {product.id}
+          </span>
+          <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+            View Details
+          </button>
         </div>
       </div>
     </div>
@@ -433,20 +483,21 @@ function ProductCard({ product }) {
 function Toast({ show, title, message, type }) {
   if (!show) return null;
   
-  const bgColor = type === 'error' ? 'bg-red-100 border-red-400 text-red-700' : 'bg-green-100 border-green-400 text-green-700';
+  const typeClasses = {
+    success: 'bg-green-500',
+    error: 'bg-red-500',
+    info: 'bg-blue-500'
+  };
   
   return (
-    <div className={`fixed bottom-4 right-4 p-4 rounded border ${bgColor} shadow-lg transition-opacity duration-300 ${show ? 'opacity-100' : 'opacity-0'} max-w-md`}>
-      <div className="flex justify-between">
-        <h3 className="font-bold">{title}</h3>
-        <button className="text-gray-500 hover:text-gray-700" onClick={() => setToast({ ...toast, show: false })}>
-          &times;
-        </button>
+    <div className="fixed bottom-5 right-5 z-50 max-w-sm">
+      <div className={`${typeClasses[type] || 'bg-gray-800'} text-white p-4 rounded-lg shadow-lg`}>
+        <div className="font-bold mb-1">{title}</div>
+        <div className="text-sm">{message}</div>
       </div>
-      <p className="mt-1">{message}</p>
     </div>
   );
 }
 
-// Render the App
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+// Mount React app
+ReactDOM.render(<App />, document.getElementById('root'));

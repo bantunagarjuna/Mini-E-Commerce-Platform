@@ -298,9 +298,9 @@
     "zod": "^3.24.4",
     "zod-validation-error": "^3.4.0"
   },
-  "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node run.js"
   },
   "keywords": [],
   "author": "",
