@@ -107,11 +107,11 @@ function App() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="container mx-auto px-4 py-8 max-w-6xl min-h-screen flex flex-col">
       <Header />
       <TabNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
       
-      <main className="mt-8">
+      <main className="mt-8 flex-grow">
         {activeTab === 'add-product' ? (
           <ProductSubmissionForm 
             onProductAdded={handleProductAdded} 
@@ -160,6 +160,7 @@ function App() {
         )}
       </main>
       
+      <Footer />
       <Toast {...toast} />
     </div>
   );
@@ -534,6 +535,24 @@ function ProductCard({ product, onDelete, isDeleting }) {
         </div>
       </div>
     </div>
+  );
+}
+
+// Footer Component
+function Footer() {
+  const currentYear = new Date().getFullYear();
+  
+  return (
+    <footer className="mt-12 py-6 border-t border-gray-200">
+      <div className="text-center">
+        <p className="text-gray-600">
+          © {currentYear} Mini E-Commerce Platform. Created by <span className="gradient-text font-medium">Bantu Nagajuna</span>
+        </p>
+        <p className="text-gray-500 text-sm mt-1">
+          All rights reserved.
+        </p>
+      </div>
+    </footer>
   );
 }
 
