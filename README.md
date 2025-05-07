@@ -4,37 +4,56 @@ A simple e-commerce web application with two main tabs: one for submitting produ
 
 ## Features
 
-- **Product Submission**: Add new products with name, price, description, and optional image URL.
-- **Product Viewing**: See all submitted products in a responsive grid layout.
-- **Smart Search**: Search for products by name, description, or even context (e.g., "need something to sit on").
-- **Clean UI**: Beautiful user interface with responsive design.
+- **Product Submission**: Add new products with name, price, description, and optional image URL
+- **Product Viewing**: See all submitted products in a responsive grid layout
+- **Smart Search**: Search for products by name, description, or even context (e.g., "need something to sit on")
+- **Clean UI**: Beautiful user interface with responsive design
 
-## Implementation
-
-This is a modern web application built with:
+## Tech Stack
 
 - **Frontend**: React.js with Tailwind CSS
 - **Backend**: Node.js with Express.js
 - **Database**: PostgreSQL for data storage
-- **State Management**: React hooks
-
-## Setup Instructions
-
-1. Run the Express.js server with React frontend:
-   ```bash
-   ./start-express.sh
-   ```
-2. This runs the application on port 3000.
 
 ## Project Structure
 
-- **Backend**: Express.js server in `express-app.js`
-- **Frontend**: React components in `public/js/react-app.js`
-- **Database**: PostgreSQL connection in `express-app.js`
+```
+.
+├── express-app.js         # Main Express.js server with API endpoints
+├── setup-database.js      # Database initialization script
+├── public/                # Frontend files
+│   ├── index-react.html   # HTML entry point for React app
+│   └── js/
+│       └── react-app.js   # React components
+├── start-express.sh       # Script to start the application
+└── README.md              # Project documentation
+```
 
-## Tech Stack
+## Key Components
 
-- **Frontend**: React.js, Tailwind CSS
-- **Backend**: Express.js on Node.js
-- **Database**: PostgreSQL
-- **Contextual Search**: Keyword matching for basic semantic search
+### Backend (Express.js)
+- RESTful API endpoints for CRUD operations
+- PostgreSQL database connection
+- Error handling middleware
+
+### Frontend (React.js)
+- Modern component-based architecture
+- State management with React hooks
+- Responsive design with Tailwind CSS
+- Interactive product submission form
+- Dynamic product grid with search functionality
+
+## Getting Started
+
+1. Run the application:
+   ```bash
+   ./start-express.sh
+   ```
+2. Access the application at http://localhost:3000
+
+## API Endpoints
+
+- `GET /api/products` - Get all products
+- `GET /api/products/:id` - Get a specific product
+- `POST /api/products` - Create a new product
+- `GET /api/products/search` - Search for products
