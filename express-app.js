@@ -189,9 +189,19 @@ async function startApp() {
   // Serve static files from the 'public' directory
   app.use(express.static(path.join(__dirname, 'public')));
   
-  // Handle all other routes by serving the main HTML file
-  app.get('*', (req, res) => {
+  // Handle all other routes by serving the main HTML file with React
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index-react.html'));
+  });
+  
+  // For compatibility with vanilla JS version
+  app.get('/vanilla', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  });
+  
+  // Fallback route
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index-react.html'));
   });
   
   // Global error handler

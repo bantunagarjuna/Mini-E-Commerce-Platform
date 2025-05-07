@@ -27,6 +27,13 @@ This project is available in two versions:
 - **Database**: PostgreSQL with direct queries
 - **State Management**: DOM manipulation
 
+### React + Express Version
+
+- **Frontend**: React.js with Tailwind CSS
+- **Backend**: Express.js (JavaScript)
+- **Database**: PostgreSQL with direct queries
+- **State Management**: React hooks
+
 ## Setup Instructions
 
 ### TypeScript/React Version
@@ -36,11 +43,19 @@ This project is available in two versions:
 
 ### Plain JavaScript Version
 
-1. Run the Express.js server:
+1. Run the Express.js server with vanilla JS frontend:
    ```bash
    ./start-express.sh
    ```
 2. This runs the JavaScript version on port 3000.
+
+### React + Express Version
+
+1. Run the Express.js server with React frontend:
+   ```bash
+   ./start-express-react.sh
+   ```
+2. This runs the React + Express.js version on port 3000.
 
 ## Tech Stack
 
