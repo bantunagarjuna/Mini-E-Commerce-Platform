@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopEase - Mini E-Commerce Platform</title>
+  <meta name="description" content="A simple e-commerce platform for product submission and browsing">
+  
+  <!-- Open Graph tags for better social media sharing -->
+  <meta property="og:title" content="ShopEase - Mini E-Commerce Platform">
+  <meta property="og:description" content="A simple e-commerce platform for product submission and browsing">
+  <meta property="og:type" content="website">
+  
+  <!-- CSS Libraries -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  
+  <!-- Custom CSS -->
+  <style>
+    .primary-color {
+      color: #3B82F6;
+    }
+    .primary-bg {
+      background-color: #3B82F6;
+    }
+    .primary-border {
+      border-color: #3B82F6;
+    }
+    .hover-primary-bg:hover {
+      background-color: #2563EB;
+    }
+    .gradient-text {
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      background-image: linear-gradient(to right, #3B82F6, #2563EB);
+    }
+    .card {
+      transition: all 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    .loading-spinner {
+      border-top-color: #3B82F6;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .line-clamp-1 {
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+    }
+    .line-clamp-3 {
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+    }
+    /* Price tag styling */
+    .price-tag {
+      background-color: rgba(59, 130, 246, 0.1);
+      color: #3B82F6;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans min-h-screen">
+  <header class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 primary-color" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" />
+          </svg>
+          <h1 class="text-xl font-bold gradient-text">ShopEase</h1>
+        </div>
+        <div>
+          <span class="text-sm text-gray-500">Mini E-Commerce Platform</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8 border-b border-gray-200">
+      <div class="flex space-x-8">
+        <button id="submission-tab" class="py-4 px-1 border-b-2 border-primary-500 text-primary-600 font-medium text-sm focus:outline-none">
+          Product Submission
+        </button>
+        <button id="products-tab" class="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm focus:outline-none">
+          My Products
+        </button>
+      </div>
+    </div>
+
+    <!-- Product Submission Tab -->
+    <div id="submission-content" class="mt-0">
+      <div class="max-w-2xl mx-auto bg-white shadow-sm rounded-lg p-6">
+        <h2 class="text-lg font-medium text-gray-900 mb-4">Add a New Product</h2>
+        <form id="product-form" class="space-y-4">
+          <div>
+            <label for="product-name" class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+            <input type="text" id="product-name" name="name" class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:ring-primary-500 focus:border-primary-500" required>
+          </div>
+          
+          <div>
+            <label for="product-price" class="block text-sm font-medium text-gray-700 mb-1">Price (USD)</label>
+            <input type="number" id="product-price" name="price" min="0.01" step="0.01" class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:ring-primary-500 focus:border-primary-500" required>
+          </div>
+          
+          <div>
+            <label for="product-description" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <textarea id="product-description" name="description" rows="4" class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:ring-primary-500 focus:border-primary-500" required></textarea>
+          </div>
+          
+          <div>
+            <label for="product-image" class="block text-sm font-medium text-gray-700 mb-1">Image URL (optional)</label>
+            <input type="url" id="product-image" name="imageUrl" class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:ring-primary-500 focus:border-primary-500">
+            <p class="mt-1 text-sm text-gray-500">Provide a URL to an image of your product</p>
+          </div>
+          
+          <div>
+            <button type="submit" class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white primary-bg hover-primary-bg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+              Submit Product
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Products View Tab -->
+    <div id="products-content" class="mt-0 hidden">
+      <!-- Search Field -->
+      <div class="max-w-lg mx-auto w-full mb-6">
+        <div class="relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <input 
+            id="search-products"
+            class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 transition-colors"
+            placeholder="Search products by name, description, or context..."
+          />
+        </div>
+        <p class="text-sm text-gray-500 mt-1">Try searching for "chair", "desk", or even "need something to sit on"</p>
+      </div>
+
+      <!-- Loading State -->
+      <div id="loading-state" class="flex justify-center py-12 hidden">
+        <div class="rounded-full h-12 w-12 border-t-2 border-b-2 loading-spinner"></div>
+      </div>
+
+      <!-- Error State -->
+      <div id="error-state" class="text-center py-12 bg-white rounded-lg shadow-sm hidden">
+        <div class="inline-block p-4 rounded-full bg-red-100 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Error loading products</h3>
+        <p class="text-gray-500 mb-4">Please try again later.</p>
+      </div>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="text-center py-12 bg-white rounded-lg shadow-sm hidden">
+        <div class="inline-block p-4 rounded-full bg-gray-100 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0v10a2 2 0 01-2 2H6a2 2 0 01-2-2V7m16 0L18 6m-8-3v2m0 12v2" />
+          </svg>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No products yet</h3>
+        <p class="text-gray-500 mb-4">Your product list is empty. Add your first product to get started.</p>
+        <button 
+          id="add-first-product"
+          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white primary-bg hover-primary-bg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+        >
+          Add Your First Product
+        </button>
+      </div>
+
+      <!-- Product Grid -->
+      <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- Products will be dynamically inserted here -->
+      </div>
+
+      <!-- No Search Results -->
+      <div id="no-results-state" class="text-center py-12 bg-white rounded-lg shadow-sm hidden">
+        <div class="inline-block p-4 rounded-full bg-gray-100 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No matching products</h3>
+        <p class="text-gray-500 mb-4">Try adjusting your search or filter criteria.</p>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-4 right-4 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-4 transform translate-x-full transition-transform duration-300 flex items-start max-w-sm">
+      <div class="flex-shrink-0 mr-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div>
+        <h3 id="toast-title" class="text-sm font-medium text-gray-900">Success</h3>
+        <p id="toast-message" class="mt-1 text-sm text-gray-500">Product added successfully!</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Script imports -->
+  <script src="/js/main.js"></script>
+</body>
+</html>
