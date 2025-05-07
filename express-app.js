@@ -189,19 +189,29 @@ async function startApp() {
   // Serve static files from the 'public' directory
   app.use(express.static(path.join(__dirname, 'public')));
   
-  // Handle all other routes by serving the main HTML file with React
+  // Determine if we're using React or vanilla JS based on environment variable
+  const useReact = process.env.USE_REACT === 'true';
+  const defaultHtmlFile = useReact ? 'index-react.html' : 'index.html';
+  
+  console.log(`Using ${useReact ? 'React.js' : 'vanilla JavaScript'} frontend`);
+  
+  // Handle root route
   app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', defaultHtmlFile));
+  });
+  
+  // Routes for explicitly accessing each version
+  app.get('/react', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index-react.html'));
   });
   
-  // For compatibility with vanilla JS version
   app.get('/vanilla', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
   });
   
   // Fallback route
   app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index-react.html'));
+    res.sendFile(path.join(__dirname, 'public', defaultHtmlFile));
   });
   
   // Global error handler
