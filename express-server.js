@@ -1,11 +1,15 @@
-// Import required modules in CommonJS format
-const express = require('express');
-const { Pool } = require('@neondatabase/serverless');
-const ws = require('ws');
-const path = require('path');
+// Import required modules in ES module format
+import express from 'express';
+import { Pool, neonConfig } from '@neondatabase/serverless';
+import ws from 'ws';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get the directory name
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Configure Neon database
-const neonConfig = require('@neondatabase/serverless').neonConfig;
 neonConfig.webSocketConstructor = ws;
 
 // Create Express application
