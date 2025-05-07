@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Entries - Mini E-Commerce Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f7fa;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        h1 {
+            background: linear-gradient(to right, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background-color: #f3f4f6;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .product-img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        tr:hover {
+            background-color: #f9fafb;
+        }
+        .footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold mb-6">Database Entries - Mini E-Commerce Platform</h1>
+        
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Description</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>4</td>
+                        <td><img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=60&h=60&fit=crop" alt="Headphones" class="product-img"></td>
+                        <td>Wireless Bluetooth Headphones</td>
+                        <td>$59.99</td>
+                        <td>Premium noise-cancelling headphones with deep bass and crystal clear sound. 30-hour battery life and comfortable over-ear design.</td>
+                        <td>2025-05-07</td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td><img src="https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=60&h=60&fit=crop" alt="Fitness Watch" class="product-img"></td>
+                        <td>Smart Fitness Watch</td>
+                        <td>$89.99</td>
+                        <td>Track your health and fitness with this advanced smartwatch. Features heart rate monitoring, step counting, sleep tracking, and smartphone notifications.</td>
+                        <td>2025-05-07</td>
+                    </tr>
+                    <tr>
+                        <td>6</td>
+                        <td><img src="https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=60&h=60&fit=crop" alt="Speaker" class="product-img"></td>
+                        <td>Portable Bluetooth Speaker</td>
+                        <td>$49.99</td>
+                        <td>Compact, waterproof speaker with amazing 360-degree sound. Perfect for outdoor adventures with 12-hour battery life and durable construction.</td>
+                        <td>2025-05-07</td>
+                    </tr>
+                    <tr>
+                        <td>7</td>
+                        <td><img src="https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=60&h=60&fit=crop" alt="Smart TV" class="product-img"></td>
+                        <td>Ultra HD Smart TV</td>
+                        <td>$699.99</td>
+                        <td>55-inch 4K Ultra HD Smart TV with built-in streaming apps, voice control, and stunning picture quality. Experience your favorite content like never before.</td>
+                        <td>2025-05-07</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-8">
+            <h2 class="text-xl font-semibold mb-4">Database Schema</h2>
+            <pre class="bg-gray-100 p-4 rounded-lg overflow-x-auto">
+CREATE TABLE IF NOT EXISTS products (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  price DECIMAL(10, 2) NOT NULL,
+  description TEXT NOT NULL,
+  image_url TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+            </pre>
+        </div>
+        
+        <div class="footer">
+            <p>© 2025 Mini E-Commerce Platform. Created by <span style="background: linear-gradient(to right, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 500;">Bantu Nagajuna</span></p>
+        </div>
+    </div>
+</body>
+</html>

@@ -203,6 +203,135 @@ const server = http.createServer(async (req, res) => {
       res.end(JSON.stringify({ error: 'Server error' }));
     }
   }
+  else if (pathname === '/database-view') {
+    // Display database entries in a visual format
+    try {
+      const result = await pool.query('SELECT * FROM products ORDER BY created_at DESC');
+      const products = result.rows;
+      
+      // Generate HTML for the database view
+      const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Entries - Mini E-Commerce Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f7fa;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+        .table-container {
+            overflow-x: auto;
+        }
+        h1 {
+            background: linear-gradient(to right, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background-color: #f3f4f6;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .product-img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        tr:hover {
+            background-color: #f9fafb;
+        }
+        .footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold mb-6">Database Entries - Mini E-Commerce Platform</h1>
+        
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Description</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${products.map(product => `
+                    <tr>
+                        <td>${product.id}</td>
+                        <td>${product.image_url ? `<img src="${product.image_url}?w=60&h=60&fit=crop" alt="${product.name}" class="product-img">` : 'No Image'}</td>
+                        <td>${product.name}</td>
+                        <td>$${product.price}</td>
+                        <td>${product.description}</td>
+                        <td>${new Date(product.created_at).toLocaleDateString()}</td>
+                    </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-8">
+            <h2 class="text-xl font-semibold mb-4">Database Schema</h2>
+            <pre class="bg-gray-100 p-4 rounded-lg overflow-x-auto">
+CREATE TABLE IF NOT EXISTS products (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  price DECIMAL(10, 2) NOT NULL,
+  description TEXT NOT NULL,
+  image_url TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+            </pre>
+        </div>
+        
+        <div class="footer">
+            <p>© ${new Date().getFullYear()} Mini E-Commerce Platform. Created by <span style="background: linear-gradient(to right, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 500;">Bantu Nagajuna</span></p>
+        </div>
+    </div>
+</body>
+</html>`;
+      
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'text/html');
+      res.end(html);
+    } catch (err) {
+      console.error('Error generating database view:', err);
+      res.statusCode = 500;
+      res.end('Server Error');
+    }
+  }
   else {
     // Serve static files
     let filePath = pathname;
